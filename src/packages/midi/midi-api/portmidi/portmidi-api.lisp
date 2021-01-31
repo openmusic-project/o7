@@ -342,8 +342,8 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
                              (declare (ignore time))
                              (portmidi-send-evt message))
                          buff n redirect-to-port))
-                      )
-                    (sleep 0.001)))))
+                      ))
+                (sleep 0.001))))
 
     (PROGN
       (pm::pm-EventBufferFree buff)
