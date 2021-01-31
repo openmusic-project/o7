@@ -331,6 +331,11 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
   (UNWIND-PROTECT
 
       (let ((out? (get-output-stream-from-port redirect-to-port)))
+
+        ;;; flush current buffer (anything received before the loop starts)
+        (loop while (portmidi-poll stream)
+              do (portmidi-read stream buff size))
+
         (loop do
               (if (portmidi-poll stream)
                   (let ((n (portmidi-read stream buff size)))
@@ -347,8 +352,7 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 
     (PROGN
       (pm::pm-EventBufferFree buff)
-      (mp:process-kill mp::*current-process*)
-      )
+      (mp:process-kill mp::*current-process*))
     ))
 
 
