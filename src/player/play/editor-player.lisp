@@ -279,11 +279,6 @@
     (editor-pause self)))
 
 
-(defmethod editor-record ((self play-editor-mixin))
-  ;;;(setf (engines (player self)) (list (get-player-engine self)))
-  ;(player-record (player self))
-  nil)
-
 ;;; FUNCTIONS TO DEFINE BY THE EDITORS
 (defmethod editor-next-step ((self play-editor-mixin)) nil)
 (defmethod editor-previous-step ((self play-editor-mixin)) nil)
@@ -537,15 +532,17 @@
                                              (declare (ignore b))
                                              (editor-next-step editor))))))
 
-(defmethod make-rec-button ((editor play-editor-mixin) &key size enable)
+
+(defmethod make-rec-button ((editor play-editor-mixin) &key size enable record-fun)
   (make-button-view
    (setf (rec-button editor)
          (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
                                  :icon :icon-record-black :icon-pushed :icon-record-red :icon-disabled :icon-record-gray
                                  :lock-push t :enabled enable
-                                 :action #'(lambda (b)
-                                             (declare (ignore b))
-                                             (editor-record editor))))))
+                                 :action (when record-fun
+                                           #'(lambda (b)
+                                               (funcall record-fun (pushed b)))
+                                           )))))
 
 (defmethod make-repeat-button ((editor play-editor-mixin) &key size enable)
   (make-button-view
