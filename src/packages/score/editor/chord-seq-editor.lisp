@@ -53,6 +53,7 @@
 
 (defmethod editor-with-timeline ((self chord-seq-editor)) nil)
 
+
 ;;;=========================
 ;;; LEFT-VIEW
 ;;;=========================
@@ -344,6 +345,81 @@
     #'(lambda ()
         (align-chords-in-editor self))
     ))
+
+
+;;;======================================
+;;; RECORD
+;;;======================================
+
+(defmethod can-record ((self chord-seq-editor)) t)
+
+(defmethod editor-record-on ((self chord-seq-editor))
+
+  (let ((chord-seq (get-default-voice self))
+        (in-port (get-pref-value :midi :in-port))
+        (in-notes (make-hash-table)))
+
+    (setf (record-process self)
+          (om-midi::portmidi-in-start
+           in-port
+
+           #'(lambda (message time)
+               (declare (ignore time))
+
+               (when (equal :play (editor-play-state self))
+                 (let ((time-ms (player-get-object-time (player self) (get-obj-to-play self)))
+                       (pitch (car (om-midi:midi-evt-fields message))))
+
+                   (case (om-midi::midi-evt-type message)
+
+                     (:KeyOn
+                      (let ((chord (make-instance 'chord :onset time-ms
+                                                  :ldur '(100)
+                                                  :lmidic (list (* 100 (car (om-midi:midi-evt-fields message))))
+                                                  :lvel (list (cadr (om-midi:midi-evt-fields message)))
+                                                  :lchan (list (om-midi:midi-evt-chan message))
+                                                  :lport (list (om-midi:midi-evt-port message))
+                                                  )))
+                        (setf (gethash pitch in-notes) chord)
+
+                        (time-sequence-insert-timed-item-and-update chord-seq chord)
+                        (report-modifications self)
+                        (update-timeline-editor self)
+
+                        (editor-invalidate-views self)
+                        ))
+
+                     (:KeyOff
+                      (let ((chord (gethash pitch in-notes)))
+                        (when chord
+                          (setf (ldur chord)
+                                (list (- (if (> time-ms (onset chord)) time-ms (get-obj-dur chord-seq))
+                                         (onset chord))))
+                          (remhash pitch in-notes))
+                        (editor-invalidate-views self)))
+
+                     (otherwise nil)))))
+
+           1
+           (and (get-pref-value :midi :thru)
+                (get-pref-value :midi :thru-port))
+           ))
+
+    (om-print-format "Start recording in ~A (port ~D)"
+                     (list (or (name (object self)) (type-of (get-obj-to-play self))) in-port)
+                     "MIDI")
+    )
+
+  (call-next-method))
+
+
+(defmethod editor-record-off ((self chord-seq-editor))
+  (om-midi::portmidi-in-stop (record-process self))
+  (om-print-format "Stop recording in ~A"
+                   (list (or (name (object self)) (type-of (get-obj-to-play self))))
+                   "MIDI")
+  (call-next-method))
+
 
 ;;;=========================
 ;;; IMPORT/EXPORT
