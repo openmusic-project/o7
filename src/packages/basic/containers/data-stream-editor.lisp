@@ -22,7 +22,8 @@
 ;;;======================================
 
 (defclass data-stream-editor (OMEditor play-editor-mixin undoable-editor-mixin multi-display-editor-mixin)
-  ((timeline-editor :accessor timeline-editor :initform nil)))
+  ((timeline-editor :accessor timeline-editor :initform nil)
+   (record-process :accessor record-process :initform nil)))
 
 (defmethod object-default-edition-params ((self data-stream))
   '((:display-mode :blocks)
@@ -85,6 +86,21 @@
               ))
 
 
+(defmethod can-record ((self data-stream-editor)) nil)
+
+;;; override if you can record!
+(defmethod editor-record-on ((self data-stream-editor))
+  (setf (pushed (rec-button self)) t)
+  (editor-invalidate-views self)
+  t)
+
+;;; override if you can record!
+(defmethod editor-record-off ((self data-stream-editor))
+  (setf (pushed (rec-button self)) nil)
+  (editor-invalidate-views self)
+  t)
+
+
 (defun make-control-bar (editor)
 
   (let ((mousepostext (om-make-graphic-object 'om-item-text :size (omp 60 16))))
@@ -101,6 +117,12 @@
                      (make-repeat-button editor :enable t)
                      (make-pause-button editor :enable t)
                      (make-stop-button editor :enable t)
+                     (when (can-record editor)
+                       (make-rec-button editor :enable t
+                                        :record-fun #'(lambda (on)
+                                                        (if on (editor-record-on editor)
+                                                          (editor-record-off editor)))
+                                        ))
                      ))
     ))
 
