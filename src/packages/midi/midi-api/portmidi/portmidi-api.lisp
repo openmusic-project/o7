@@ -327,10 +327,10 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 |#
 
 
-(defun midi-in-loop (stream buff size &optional (fun #'identity) (port nil))
+(defun midi-in-loop (stream buff size &optional (fun #'identity) (port nil) (redirect-to-port nil))
   (UNWIND-PROTECT
 
-      (let ((out? (get-output-stream-from-port port)))
+      (let ((out? (get-output-stream-from-port redirect-to-port)))
         (loop do
               (if (portmidi-poll stream)
                   (let ((n (portmidi-read stream buff size)))
@@ -338,8 +338,10 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
                       (PMEventBufferMap fun buff n port)
                       (when out?
                         (PMEventBufferMap
-                         #'(lambda (message time) (portmidi-send-evt message))
-                         buff n port))
+                         #'(lambda (message time)
+                             (declare (ignore time))
+                             (portmidi-send-evt message))
+                         buff n redirect-to-port))
                       )
                     (sleep 0.001)))))
 
@@ -347,7 +349,6 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
       (pm::pm-EventBufferFree buff)
       (mp:process-kill mp::*current-process*)
       )
-
     ))
 
 
@@ -357,9 +358,10 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
     (if (null in) (progn (print (format nil "PortMidi ERROR: INPUT port ~A is not connected" portnum)) nil)
       (let* ((midibuffer (pm::pm-EventBufferNew buffersize))
              (midiprocess (make-midi-in-process :buffer midibuffer
-                                                :process (mp:process-run-function (format nil "MIDI IN (~s)" name) nil
-                                                                                  #'midi-in-loop
-                                                                                  in midibuffer buffersize function redirect-to-port))))
+                                                :process (mp:process-run-function
+                                                          (format nil "MIDI IN (~s)" name) nil
+                                                          #'midi-in-loop
+                                                          in midibuffer buffersize function portnum redirect-to-port))))
         midiprocess))))
 
 (defun portmidi-in-stop (midiprocess)
