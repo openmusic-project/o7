@@ -238,15 +238,16 @@
      (oa::om-make-layout
       'oa:om-column-layout
       :ratios '(1 nil)
+      :delta 10
       :subviews (list
                  (oa::om-make-layout 'oa:om-row-layout :subviews (list inv outv))
                  (oa::om-make-layout 'oa:om-row-layout :align :bottom
                                      :subviews
                                      (list
                                       (oa::om-make-di 'oa::om-multi-text
-                                                      :size (oa::om-make-point 400 36)
+                                                      :size (oa::om-make-point 400 32)
                                                       :fg-color (oa:om-def-color :dark-gray)
-                                                      :text "This software detects MIDI devices at startup. If some active MIDI devices do not appear in the lists, you might need to restart the program."
+                                                      :text "This software detects MIDI devices at startup. If some active MIDI devices do not appear in the lists, you might need to restart."
                                                       :font (oa::om-def-font :font1))
                                      ;(oa::om-make-di 'oa::om-button :position (oa::om-make-point 20 265) :size (oa::om-make-point 130 20) :text "Refresh Devices"
                                      ;                :di-action #'(lambda (item)
