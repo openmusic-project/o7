@@ -202,8 +202,6 @@
     ))
 
 
-
-
 ;;;=========================
 ;;; DISPLAY
 ;;;=========================
@@ -230,13 +228,14 @@
                           :keys (keys self))
               )))))
 
+
 ;;;---------------------------------------------
 ;;; SCORE-EDITOR REDEFINITIONS
+
 (defmethod draw-staff-in-editor-view ((editor multi-seq-editor) (self score-view))
   (poly-editor-draw-staff-in-editor-view editor self))
 (defmethod draw-staff-in-editor-view ((editor poly-editor) (self score-view))
   (poly-editor-draw-staff-in-editor-view editor self))
-
 
 (defmethod draw-tempo-in-editor-view ((editor poly-editor) (self score-view))
   (let* ((fontsize (editor-get-edit-param editor :font-size))
