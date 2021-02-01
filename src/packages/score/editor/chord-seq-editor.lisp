@@ -241,7 +241,7 @@
        (let ((new-chord (time-sequence-make-timed-item-at time-seq time-pos)))
          (setf (notes new-chord) nil)
          ;;; notes = NIL here so the duration will be 0 at updating the time-sequence
-         (time-sequence-insert-timed-item-and-update time-seq new-chord (find-position-at-time time-seq time-pos))
+         (time-sequence-insert-timed-item-and-update time-seq new-chord)
          new-chord))
 
      )))
