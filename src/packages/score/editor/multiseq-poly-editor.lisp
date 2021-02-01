@@ -413,6 +413,13 @@
   (obj-list (object-value self)))
 (defmethod get-all-voices ((self poly-editor))
   (obj-list (object-value self)))
+
+(defmethod get-default-voice ((self multi-seq-editor))
+  (or (find 'chord-seq (selection self) :key #'type-of :test #'subtypep)
+      (car (obj-list (object-value self)))))
+(defmethod get-default-voice ((self poly-editor))
+  (or (find 'chord-seq (selection self) :key #'type-of :test #'subtypep)
+      (car (obj-list (object-value self)))))
 ;;;---------------------------------------------
 
 

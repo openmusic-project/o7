@@ -249,6 +249,8 @@
   (values (object-value self) 0))
 (defmethod get-all-voices ((self score-editor))
   (list (object-value self)))
+(defmethod get-default-voice ((self score-editor))
+  (object-value self))
 
 (defmethod get-selected-chords ((editor score-editor))
   (remove-duplicates
