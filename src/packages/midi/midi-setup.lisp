@@ -43,6 +43,12 @@
 (add-preference :midi :in-port "Default Input port" (make-number-in-range :min 0 :max 99 :decimals 0)
                 0 ;; default value
                 "Incoming MIDI are received on this port number")
+(add-preference :midi :thru-port "Default Thru port" (make-number-in-range :min 0 :max 99 :decimals 0)
+                0 ;; default value
+                "MIDI events are redirected to this port when the 'thru' function is activated")
+(add-preference :midi :thru "MIDI Thru" :bool
+                T ;; default value
+                "Redirect incoming MIDI events to the 'thru' port")
 
 
 (add-preference-section :midi "Channel colors")
