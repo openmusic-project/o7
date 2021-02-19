@@ -326,8 +326,8 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
                   (sleep 0.001)))))))
 |#
 
+(defun midi-in-loop (stream buff size &optional (fun nil) (port nil) (redirect-to-port nil))
 
-(defun midi-in-loop (stream buff size &optional (fun #'identity) (port nil) (redirect-to-port nil))
   (UNWIND-PROTECT
 
       (let ((out? (get-output-stream-from-port redirect-to-port)))
@@ -340,7 +340,7 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
               (if (portmidi-poll stream)
                   (let ((n (portmidi-read stream buff size)))
                     (unless (= n 0)
-                      (PMEventBufferMap fun buff n port)
+                      (when fun (PMEventBufferMap fun buff n port))
                       (when out?
                         (PMEventBufferMap
                          #'(lambda (message time)
