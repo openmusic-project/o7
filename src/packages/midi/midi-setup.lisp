@@ -33,13 +33,16 @@
 
 
 (defparameter *running-midi-boxes* nil)
+(defparameter *running-midi-recorders* nil)
 
 (defun before-restart-midi ()
   (when (or *running-midi-boxes* *running-midi-recorders*)
     (om-message-dialog
      (format nil "Warning: Restarting MIDI will stop all currently running MIDI receive loops.~%[currently: ~D running]"
-             (length *running-midi-boxes*)))
+             (+ (length *running-midi-boxes*)
+                (length *running-midi-recorders*))))
     (mapcar #'stop-box *running-midi-boxes*)
+    (mapcar #'editor-record-off *running-midi-recorders*)
     ))
 
 
