@@ -304,27 +304,6 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
 
 (defstruct midi-in-process (process) (buffer))
 
-#|
-(defun midi-in-loop (stream buff size &optional (fun #'identity) (port nil))
-  (handler-bind ((error #'(lambda (err)
-                            (print (format nil "PORTMIDI ERREOR: ~s" err))
-                            ;(pm::pm-close stream)
-                            (pm::pm-EventBufferFree buff)
-                            (mp:process-kill mp::*current-process*)
-                            )))
-    (let ((out? (get-output-stream-from-port port)))
-      (loop do
-            (if (portmidi-poll stream)
-                (let ((n (portmidi-read stream buff size)))
-                  (unless (= n 0)
-                    (PMEventBufferMap fun buff n port)
-                    (when out?
-                      (PMEventBufferMap
-                       #'(lambda (message time) (portmidi-send-evt message))
-                       buff n port))
-                    )
-                  (sleep 0.001)))))))
-|#
 
 (defun midi-in-loop (stream buff size &optional (fun nil) (port nil) (redirect-to-port nil))
 
