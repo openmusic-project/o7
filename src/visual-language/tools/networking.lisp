@@ -110,8 +110,9 @@ Note: default host 127.0.0.1 is the 'localhost', i.e. the message is send to the
   :initvals '(3000 nil "localhost")
   :doc "A local UDP server.
 
-Right-click and select the appropriate option to turn on/off.
-When the server is on, OSC-RECEIVE waits for messages on port <port> and calls <msg-processing> with the message as parameter.
+Use 'R' to set the box reactive and activate/deactivate the server.
+
+When the server is on, UDP-RECEIVE waits for messages on port <port> and calls <msg-processing> with the message as parameter.
 
 <msg-processing> must be a patch in mode 'lambda' with 1 input corresponding to a message.
 This patch should handle and process the incoming messages.

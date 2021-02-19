@@ -79,7 +79,8 @@ Note: default host 127.0.0.1 is the 'localhost', i.e. the message is send to the
   :initvals '(3000 nil nil)
   :doc "A local OSC server.
 
-Right-click and select the appropriate option to turn on/off.
+Use 'R' to set the box reactive and activate/deactivate the server.
+
 When the server is on, OSC-RECEIVE waits for OSC messages on port <port> and calls <msg-processing> with the decoded message as parameter.
 
 <msg-processing> must be a patch in mode 'lambda' with 1 input corresponding to an OSC message.
