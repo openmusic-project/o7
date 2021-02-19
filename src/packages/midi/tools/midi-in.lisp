@@ -72,6 +72,7 @@ Otherwise, default MIDI Thru preferences apply.
                     thru)))
       (when process
         (om-print-format "MIDI-IN start recording on port ~D" (list port) "MIDI")
+        (push box *running-midi-boxes*)
         process))
     ))
 
@@ -80,4 +81,5 @@ Otherwise, default MIDI Thru preferences apply.
   (when process
     (om-midi::portmidi-in-stop process)
     (om-print "MIDI-IN stop recording" "MIDI"))
+  (setf *running-midi-boxes* (remove box *running-midi-boxes*))
   t)

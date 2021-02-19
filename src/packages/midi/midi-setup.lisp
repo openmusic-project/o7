@@ -27,8 +27,20 @@
   (om-midi::portmidi-connect-ports (get-pref-value :midi :ports)))
 
 (defun midi-setup ()
+  (before-restart-midi)
   (when (midi-get-ports-settings)
     (midi-apply-ports-settings)))
+
+
+(defparameter *running-midi-boxes* nil)
+
+(defun before-restart-midi ()
+  (when (or *running-midi-boxes* *running-midi-recorders*)
+    (om-message-dialog
+     (format nil "Warning: Restarting MIDI will stop all currently running MIDI receive loops.~%[currently: ~D running]"
+             (length *running-midi-boxes*)))
+    (mapcar #'stop-box *running-midi-boxes*)
+    ))
 
 
 (add-preference-module :midi "MIDI")
