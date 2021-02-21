@@ -311,3 +311,9 @@
              *micro-channel-mode-on*)
     (loop for p in (collec-ports-from-object object) do (micro-reset p)))
   (call-next-method))
+
+
+(defmethod set-time-callback ((self score-element) time)
+  (declare (ignore time))
+  (call-next-method)
+  (om-midi::midi-all-keys-off))

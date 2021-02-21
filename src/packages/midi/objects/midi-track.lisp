@@ -500,6 +500,12 @@
   (om-midi::midi-all-keys-off))
 
 
+(defmethod set-time-callback ((self midi-track) time)
+  (declare (ignore time))
+  (call-next-method)
+  (om-midi::midi-all-keys-off))
+
+
 ;;;======================================
 ;;; DRAW
 ;;;======================================
