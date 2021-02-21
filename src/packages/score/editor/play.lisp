@@ -131,6 +131,7 @@
 
 
 (defmethod get-action-list-for-play ((object chord-seq) interval &optional parent)
+
   (let ((chan-shift (and (not (equal :off (get-pref-value :score :microtone-bend)))
                          (micro-channel-on (pitch-approx object)))))
 
@@ -139,20 +140,19 @@
                                    (let ((t1 (+ (date chord) (list-min (loffset chord))))
                                          (t2 (+ (date chord) (loop for n in (notes chord) maximize (+ (offset n) (dur n))))))
                                      (or (< t2 (car interval))
-                                         (> t1 (cadr interval)))
+                                         (>= t1 (cadr interval)))
                                      ))
                                (chords object))
            append
            (loop for n in (notes c) append
-                 (let ((channel (+ (or (chan n) 1)
+                 (let ((date (+ (date c) (offset n)))
+                       (channel (+ (or (chan n) 1)
                                    (if chan-shift (micro-channel (midic n) (pitch-approx object)) 0))))
                    (remove nil
                            (list
-                            (if (or (in-interval (+ (date c) (offset n)) interval :exclude-high-bound t)
-                                    ;; (minusp (offset n)) ;;; pre-schedule it ?
-                                    )
+                            (if (in-interval date interval :exclude-high-bound t)
 
-                                (list (+ (date c) (offset n))
+                                (list date
 
                                       #'(lambda (note) (om-midi::midi-send-evt
                                                         (om-midi:make-midi-evt
@@ -163,7 +163,7 @@
 
                             (if (in-interval (+ (date c) (offset n) (dur n)) interval :exclude-high-bound t)
 
-                                (list (+ (date c) (offset n) (dur n))
+                                (list (+ date (dur n))
 
                                       #'(lambda (note) (om-midi::midi-send-evt
                                                         (om-midi:make-midi-evt
