@@ -464,7 +464,8 @@
   (loop for fp in (selection self) do
         (let ((frame (nth fp (data-stream-get-frames (object-value self)))))
           (item-set-duration frame (max 0 (round (+ (item-get-duration frame) dx))))
-          )))
+          ))
+  (time-sequence-update-obj-dur (object-value self)))
 
 (defmethod delete-editor-selection ((self data-stream-editor))
   (loop for pos in (sort (selection self) '>) do
