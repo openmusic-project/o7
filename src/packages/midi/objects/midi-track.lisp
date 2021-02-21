@@ -43,7 +43,10 @@
 
 
 (defun midinote-onset (midinote) (onset midinote))
-(defun midinote-pitch (midinote) (pitch midinote))
+
+;;; round pitch: during drag operations, pitch can have float values
+;;; (it is rounded only when drag terminates)
+(defun midinote-pitch (midinote) (round (pitch midinote)))
 (defun midinote-vel (midinote) (vel midinote))
 (defun midinote-dur (midinote) (dur midinote))
 (defun midinote-channel (midinote) (ev-chan midinote))
