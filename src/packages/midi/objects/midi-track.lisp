@@ -296,8 +296,15 @@
 
 
 (defmethod move-editor-selection ((self midi-track-editor) &key (dx 0) (dy 0))
-  (loop for fp in (selection self) do
-        (let ((frame (nth fp (data-stream-get-frames (object-value self)))))
+
+  (let* ((midi-track (object-value self))
+         (frames (loop for fp in (selection self)
+                       collect (nth fp (data-stream-get-frames midi-track)))))
+
+    (unless (equal (editor-play-state self) :stop)
+      (close-open-midinotes-at-time frames (get-obj-time midi-track)))
+
+    (loop for frame in frames do
           (when (equal (ev-type frame) :note)
             (setf (pitch frame)
                   (min 95 (max 36
@@ -307,8 +314,31 @@
                                )))
             (when (equal dx :round)
               (item-set-time frame (round (item-get-time frame))))
-            )))
-  ;;; => do the x-move
+            ))
+
+    (call-next-method)))
+
+
+(defmethod resize-editor-selection ((self midi-track-editor) &key (dx 0) (dy 0))
+  (declare (ignore dy))
+
+  (unless (or (equal (editor-play-state self) :stop) (zerop dx))
+    (let* ((midi-track (object-value self))
+           (frames (loop for fp in (selection self)
+                         collect (nth fp (data-stream-get-frames midi-track)))))
+      (close-open-midinotes-at-time frames (get-obj-time midi-track))))
+
+  (call-next-method))
+
+
+(defmethod delete-editor-selection ((self midi-track-editor))
+
+  (unless (equal (editor-play-state self) :stop)
+    (let* ((midi-track (object-value self))
+           (frames (loop for fp in (selection self)
+                         collect (nth fp (data-stream-get-frames midi-track)))))
+      (close-open-midinotes-at-time frames (get-obj-time midi-track))))
+
   (call-next-method))
 
 
@@ -507,6 +537,19 @@
   (declare (ignore time))
   (call-next-method)
   (om-midi::midi-all-keys-off))
+
+
+(defun close-open-midinotes-at-time (notes time)
+  (loop for note in notes
+        do
+        (when (<= (midinote-onset note) time)
+          (om-midi::midi-send-evt
+           (om-midi:make-midi-evt
+            :type :keyOff
+            :chan (or (midinote-channel note) 1)
+            :port (or (midinote-port note) (get-pref-value :midi :out-port))
+            :fields (list (midinote-pitch note) 0)))
+          )))
 
 
 ;;;======================================
