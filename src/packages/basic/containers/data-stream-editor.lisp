@@ -466,6 +466,10 @@
           (item-set-duration frame (max 0 (round (+ (item-get-duration frame) dx))))
           )))
 
+(defmethod delete-editor-selection ((self data-stream-editor))
+  (loop for pos in (sort (selection self) '>) do
+        (remove-nth-timed-point-from-time-sequence (object-value self) pos)))
+
 
 ;;; sort the frames and reset the selection indices correctly
 (defmethod editor-sort-frames ((self data-stream-editor))
@@ -627,8 +631,7 @@
       (:om-key-delete
        (when (selection editor)
          (store-current-state-for-undo editor)
-         (loop for pos in (sort (selection editor) '>) do
-               (remove-nth-timed-point-from-time-sequence stream pos))
+         (delete-editor-selection editor)
          (setf (selection editor) nil)
          (om-invalidate-view panel)
          (update-timeline-editor editor)
