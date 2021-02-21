@@ -448,38 +448,41 @@
 (defmethod get-action-list-for-play ((object midi-track) interval &optional parent)
   (sort
    (loop for evt in (midi-events object)
-         when (and (>= (onset evt) (car interval))
-                   (< (+ (onset evt) (get-obj-dur evt))))
+         when (or (in-interval (onset evt) interval :exclude-high-bound t)
+                  (in-interval (+ (onset evt) (get-obj-dur evt)) interval :exclude-high-bound t))
          append
          (case (ev-type evt)
 
            (:note
 
             (remove nil
+
                     (list
 
-                     ;(when (in-interval (midinote-onset evt) interval :exclude-high-bound t)
+                     (when (in-interval (midinote-onset evt) interval :exclude-high-bound t)
 
-                     (list (midinote-onset evt)
-                           #'(lambda (note)
-                               (om-midi::midi-send-evt
-                                (om-midi:make-midi-evt
-                                 :type :keyOn
-                                 :chan (or (midinote-channel note) 1)
-                                 :port (or (midinote-port note) (get-pref-value :midi :out-port))
-                                 :fields (list (midinote-pitch note) (midinote-vel note)))))
-                           (list evt))
+                       (list (midinote-onset evt)
+                             #'(lambda (note)
+                                 (om-midi::midi-send-evt
+                                  (om-midi:make-midi-evt
+                                   :type :keyOn
+                                   :chan (or (midinote-channel note) 1)
+                                   :port (or (midinote-port note) (get-pref-value :midi :out-port))
+                                   :fields (list (midinote-pitch note) (midinote-vel note)))))
+                             (list evt)))
 
-                     ;(when (in-interval (midinote-end evt) interval :exclude-high-bound t)
+                     (when (in-interval (midinote-end evt) interval :exclude-high-bound t)
 
-                     (list (midinote-end evt)
-                           #'(lambda (note) (om-midi::midi-send-evt
-                                             (om-midi:make-midi-evt
-                                              :type :keyOff
-                                              :chan (or (midinote-channel note) 1)
-                                              :port (or (midinote-port note) (get-pref-value :midi :out-port))
-                                              :fields (list (midinote-pitch note) 0))))
-                           (list evt))
+                       (list (midinote-end evt)
+                             #'(lambda (note)
+                                 (om-midi::midi-send-evt
+                                  (om-midi:make-midi-evt
+                                   :type :keyOff
+                                   :chan (or (midinote-channel note) 1)
+                                   :port (or (midinote-port note) (get-pref-value :midi :out-port))
+                                   :fields (list (midinote-pitch note) 0))))
+                             (list evt)))
+
                      )))
 
            (otherwise
@@ -488,7 +491,8 @@
                    #'(lambda (e) (send-midievent e))
                    (list evt)))
             )))
-   '< :key 'car))
+   '< :key 'car)
+  )
 
 
 (defmethod player-stop-object ((self scheduler) (object midi-track))
