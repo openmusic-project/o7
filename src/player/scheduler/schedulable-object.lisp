@@ -52,8 +52,6 @@ The output has to be:
 .((Date1 Deadline1 Function1 Data1) ... (DateN DeadlineN FunctionN DataN)) where DateN is the date in ms when FunctionN is allowed to be performed and Deadline1 is the date in ms when the result has to be produced,
 .NIL if nothing has to be computed.
 
-3) The method
-
 3) Every modification on the data used by the previous methods has to be wrapped in the macro (with-schedulable-object object &rest body).
 If the use of a macro is not convenient, you can simple call (notify-scheduler object) each time you think rescheduling might be useful."))
 
@@ -125,10 +123,18 @@ If the use of a macro is not convenient, you can simple call (notify-scheduler o
 
 ;; TO USE TO EDIT DATA SLOTS OF YOUR OBJECT USED BY GET-ACTION-LIST-FOR-PLAY
 ;; (if not used, concurrent play and edit of the object is not ensured to be safe)
+(defmethod with-schedulable-object-depth ((self schedulable-object))
+  (or (getf (scheduler-data self) :macro-depth) 0))
+
+(defmethod (setf with-schedulable-object-depth) (new-depth (self schedulable-object))
+  (setf (getf (scheduler-data self) :macro-depth) new-depth))
+
 (defmacro with-schedulable-object (object &rest body)
   `(let (res)
+     (incf (with-schedulable-object-depth ,object) 1)
      (setq res (progn ,@body))
-     (when (eq (state ,object) :play)
+     (decf (with-schedulable-object-depth ,object) 1)
+     (when (and (eq (state ,object) :play) (eq (with-schedulable-object-depth ,object) 0))
        (setf (time-window ,object) (or (user-time-window ,object) *Lmin*))
        (reschedule ,object *scheduler* (get-obj-time ,object)))
      res))
