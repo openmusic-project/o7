@@ -165,12 +165,14 @@ If the use of a macro is not convenient, you can simple call (notify-scheduler o
 ;; LOOPS AN OBJECT
 ;; The object will loop at the end of its interval of at its end (if it exists)
 (defmethod loop-object ((self schedulable-object))
-  (setf (looper self) t))
+  (setf (looper self) t)
+  (notify-scheduler self))
 
 ;; UNLOOPS AN OBJECT
 ;; The object will not loop
 (defmethod unloop-object ((self schedulable-object))
-  (setf (looper self) nil))
+  (setf (looper self) nil)
+  (notify-scheduler self))
 
 (defmethod is-looping ((self schedulable-object))
   (looper self))
