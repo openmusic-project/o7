@@ -137,7 +137,7 @@
    #'(lambda (frame)
        (list (date frame)
              #'(lambda () (funcall (get-frame-action frame)))))
-   (remove-if #'(lambda (date) (or (< date (car interval)) (> date (cadr interval))))
+   (remove-if #'(lambda (date) (not (in-interval date interval :exclude-high-bound t)))
               (data-stream-get-frames object)
               :key #'onset)))
 
