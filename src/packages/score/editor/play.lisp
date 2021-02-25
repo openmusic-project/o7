@@ -178,14 +178,9 @@
     ))
 
 
-
 (defmethod get-action-list-for-play ((object multi-seq) interval &optional parent)
-
   (loop for voice in (obj-list object)
-        append (get-action-list-for-play voice interval parent))
-
-  )
-
+        append (get-action-list-for-play voice interval (or parent object))))
 
 
 ;;;===================================================

@@ -126,9 +126,8 @@
 
 ;;; CALLED WHEN THE PLAYER HAS TO PLAY SEVERAL THINGS OR PREPARE THEM IN ADVANCE
 (defmethod player-play-object ((player omplayer) obj caller &key parent interval)
-  (declare (ignore parent))
   (setf (caller player) caller)
-  (player-schedule-tasks player obj (get-action-list-for-play obj interval)))
+  (player-schedule-tasks player obj (get-action-list-for-play obj interval parent)))
 
 (defmethod player-get-object-state ((player omplayer) object) (state player))
 (defmethod player-stop-object ((player omplayer) object) (player-stop player))
