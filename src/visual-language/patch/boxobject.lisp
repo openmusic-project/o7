@@ -390,6 +390,7 @@
       ;;; in principle the window-close callback will have closed the editor and set it to NIL
       ;;; but for instance not if the window is not a special om# window (e.g. external app or library...)
       (editor-close (editor box))))
+  (omng-delete (get-box-value box))
   t)
 
 
