@@ -183,6 +183,25 @@
         append (get-action-list-for-play voice interval (or parent object))))
 
 
+;;; Use during score edits:
+(defun close-open-chords-at-time (chords time parent)
+  (let ((chan-shift (and (not (equal :off (get-pref-value :score :microtone-bend)))
+                         (micro-channel-on (pitch-approx parent)))))
+    (loop for chord in chords do
+          (let ((onset (onset chord)))
+            (loop for note in (notes chord) do
+                  (when (<= (+ (offset note) onset) time)
+                    (let ((channel (+ (or (chan note) 1)
+                                      (if chan-shift (micro-channel (midic note) (pitch-approx parent)) 0))))
+                      (om-midi:midi-send-evt
+                       (om-midi:make-midi-evt
+                        :type :keyoff
+                        :chan channel
+                        :port (or (port note) (get-pref-value :midi :out-port))
+                        :fields (list (truncate (midic note) 100) 0)))
+                      ))))
+          )))
+
 ;;;===================================================
 ;;; MICROTONES
 ;;;===================================================

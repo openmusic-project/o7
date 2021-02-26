@@ -390,6 +390,8 @@
                                     (declare (ignore view pos))
                                     (when modif
                                       (score-object-update voice)
+                                      (unless (equal (editor-play-state editor) :stop)
+                                        (close-open-chords-at-time (get-selected-chords editor) (get-obj-time obj) obj))
                                       (reset-undoable-editor-action editor)
                                       (report-modifications editor)))
                        ))
@@ -483,6 +485,10 @@
 (defmethod delete-selection ((editor score-editor))
   (when (selection editor)
     (store-current-state-for-undo editor)
+    (unless (equal (editor-play-state editor) :stop)
+      (close-open-chords-at-time (get-selected-chords editor)
+                                 (get-obj-time (object-value editor))
+                                 (object-value editor)))
     (loop for element in (selection editor) do
           (score-editor-update-params-before-remove editor element)
           (score-editor-delete editor element)

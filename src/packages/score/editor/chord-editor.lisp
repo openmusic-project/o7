@@ -135,6 +135,9 @@
                     (notes chord)
                   (selection self))))
 
+    (unless (equal (editor-play-state self) :stop)
+      (close-open-chords-at-time (list chord) (get-obj-time chord) chord))
+
     (unless (zerop dy)
       (loop for n in notes do
             (setf (midic n) (+ (midic n) (* dy step)))))
@@ -146,6 +149,9 @@
          (notes (if (find chord (selection self))
                     (notes chord)
                   (selection self))))
+
+    (unless (equal (editor-play-state self) :stop)
+      (close-open-chords-at-time (list chord) (get-obj-time chord) chord))
 
     (loop for n in notes
           do (setf (dur n) (max (abs delta) (round (+ (dur n) delta)))))

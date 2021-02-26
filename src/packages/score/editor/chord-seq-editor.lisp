@@ -250,6 +250,11 @@
 ;;; redefines from data-stream-editor
 (defmethod move-editor-selection ((self chord-seq-editor) &key (dx 0) (dy 0))
 
+  (unless (equal (editor-play-state self) :stop)
+    (close-open-chords-at-time (get-selected-chords self)
+                               (get-obj-time (object-value self))
+                               (object-value self)))
+
   (unless (zerop dx)
     (loop for item in (selection self)
           when (typep item 'chord)
@@ -265,6 +270,12 @@
 
 (defmethod score-editor-change-selection-durs ((self chord-seq-editor) delta)
   (when (editor-get-edit-param self :duration-display)
+
+    (unless (equal (editor-play-state self) :stop)
+      (close-open-chords-at-time (get-selected-chords self)
+                                 (get-obj-time (object-value self))
+                                 (object-value self)))
+
     (let ((notes (loop for item in (selection self) append (get-notes item))))
       (loop for n in notes
             do (setf (dur n) (max (abs delta) (round (+ (dur n) delta)))))
