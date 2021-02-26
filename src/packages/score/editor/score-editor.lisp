@@ -394,6 +394,7 @@
                                       (score-object-update voice)
                                       (unless (equal (editor-play-state editor) :stop)
                                         (close-open-chords-at-time (get-selected-chords editor) (get-obj-time obj) obj))
+                                      (notify-scheduler obj)
                                       (reset-undoable-editor-action editor)
                                       (report-modifications editor)))
                        ))
