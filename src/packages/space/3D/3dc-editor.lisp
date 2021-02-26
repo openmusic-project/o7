@@ -438,6 +438,10 @@
     ; (enable-play-controls self (action (object-value self))) ;;; leave T
     (update-sub-editors self)
     (update-default-view self)
+
+    ;;; will reset the repeat-state of the new object according to the current
+    ;;; repeat button state -- loop isn't stored as a proper editor property :-/
+    (editor-repeat self (pushed (repeat-button self)))
     ))
 
 ; when the timeline is edited

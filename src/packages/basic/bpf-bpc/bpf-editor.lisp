@@ -338,6 +338,11 @@
         (enable-play-controls editor (action object)))
       (om-invalidate-view (get-g-component editor :main-panel))
       )
+
+    ;;; will reset the repeat-state of the new object according to the current
+    ;;; repeat button state -- loop isn't stored as a proper editor property :-/
+    (editor-repeat editor (pushed (repeat-button editor)))
+
     (when (timeline-editor editor)
       (update-to-editor (timeline-editor editor) editor))))
 
