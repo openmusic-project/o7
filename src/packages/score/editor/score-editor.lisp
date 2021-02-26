@@ -332,6 +332,8 @@
                                 (reset-undoable-editor-action editor)
                                 (report-modifications editor))
                    )
+
+                  (notify-scheduler obj)
                   ))))
 
            ;; select
