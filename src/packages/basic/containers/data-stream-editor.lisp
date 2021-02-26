@@ -635,11 +635,12 @@
       (:om-key-delete
        (when (selection editor)
          (store-current-state-for-undo editor)
-         (delete-editor-selection editor)
+         (with-schedulable-object (object-value editor)
+                                  (delete-editor-selection editor))
          (setf (selection editor) nil)
          (om-invalidate-view panel)
          (update-timeline-editor editor)
-         ;; (time-sequence-update-obj-dur stream)
+         ;; (time-sequence-update-obj-dur stream) ; why not ?
          (report-modifications editor)))
       (:om-key-esc
        ;; maybe not needed ? we already have the db-click on ruler for that...
@@ -647,18 +648,23 @@
        )
       (:om-key-left
        (store-current-state-for-undo editor)
-       (move-editor-selection editor :dx (- (get-units (get-g-component editor :x-ruler) (if (om-shift-key-p) 100 10))))
-       (editor-sort-frames editor)
-       (time-sequence-update-internal-times stream)
+       (with-schedulable-object
+        (object-value editor)
+        (move-editor-selection editor :dx (- (get-units (get-g-component editor :x-ruler) (if (om-shift-key-p) 100 10))))
+        (editor-sort-frames editor)
+        (time-sequence-update-internal-times stream))
        (om-invalidate-view panel)
        (update-timeline-editor editor)
        (report-modifications editor)
        )
       (:om-key-right
        (store-current-state-for-undo editor)
-       (move-editor-selection editor :dx (get-units (get-g-component editor :x-ruler) (if (om-shift-key-p) 100 10)))
-       (editor-sort-frames editor)
-       (time-sequence-update-internal-times stream)
+       (with-schedulable-object
+        (object-value editor)
+        (move-editor-selection editor :dx (get-units (get-g-component editor :x-ruler) (if (om-shift-key-p) 100 10)))
+        (editor-sort-frames editor)
+        (time-sequence-update-internal-times stream))
+
        (om-invalidate-view panel)
        (update-timeline-editor editor)
        (report-modifications editor))
