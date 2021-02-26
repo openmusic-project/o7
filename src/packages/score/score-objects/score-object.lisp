@@ -45,6 +45,10 @@
    ))
 
 
+(defmethod omng-delete ((box score-element))
+  (om-midi::midi-all-keys-off)
+  (call-next-method))
+
 ;;; this method to be defined according to the different objects' slot names etc.
 ;;; also allows compat with OM6 naming
 (defmethod inside ((self score-element)) nil)
