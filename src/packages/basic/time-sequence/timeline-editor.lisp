@@ -266,6 +266,9 @@
                                                (list timeline-item timeline-view)) ;; fold-icon
                                               foldable-container))))
             (setq left-item-w (om-width timeline-item))
+
+            (setf (cursor-interval timeline-view) (play-interval (print container-editor)))
+
             (pushr timeline-view timeline-views)
             (pushr fold-group foldable-containers)))
 
