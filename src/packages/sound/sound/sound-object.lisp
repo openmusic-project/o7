@@ -747,7 +747,8 @@ Press 'space' to play/stop the sound file.
   (call-next-method))
 
 (defmethod set-object-current-time ((self sound) time)
-  (jump-to-time (buffer-player self) time)
+  (when (buffer-player self)
+    (jump-to-time (buffer-player self) time))
   (call-next-method))
 
 
