@@ -366,7 +366,7 @@
   (om-stop-transient-drawing self)
   (om-start-transient-drawing
    self #'draw-cursor-line
-   (omp (time-to-pixel self (car (cursor-interval self))) 0)
+   (omp (time-to-pixel self (or (car (cursor-interval self)) 0)) 0)
    (omp 2 (h self))))
 
 (defmethod stop-cursor ((self x-cursor-graduated-view))
@@ -420,20 +420,21 @@
 
 ;;; return T if detected/did something
 (defmethod handle-selection-extent ((self x-cursor-graduated-view) position)
-  (let ((tpl-editor (editor (om-view-window self)))
-        (bx (time-to-pixel self (car (cursor-interval self))))
-        (ex (time-to-pixel self (cadr (cursor-interval self)))))
-    (cond ((om-point-in-line-p position (omp ex 0) (omp ex (h self)) 4)
-           (change-interval-end tpl-editor self position)
-           t)
-          ((om-point-in-line-p position (omp bx 0) (omp bx (h self)) 4)
-           (change-interval-begin tpl-editor self position)
-           t)
-          (t
-           ;(set-cursor-time tpl-editor (pixel-to-time self (om-point-x position)))
-           ;(start-interval-selection tpl-editor self position)
-           nil
-           ))))
+  (when (cursor-interval self)
+    (let ((tpl-editor (editor (om-view-window self)))
+          (bx (time-to-pixel self (car (cursor-interval self))))
+          (ex (time-to-pixel self (cadr (cursor-interval self)))))
+      (cond ((om-point-in-line-p position (omp ex 0) (omp ex (h self)) 4)
+             (change-interval-end tpl-editor self position)
+             t)
+            ((om-point-in-line-p position (omp bx 0) (omp bx (h self)) 4)
+             (change-interval-begin tpl-editor self position)
+             t)
+            (t
+             ;(set-cursor-time tpl-editor (pixel-to-time self (om-point-x position)))
+             ;(start-interval-selection tpl-editor self position)
+             nil
+             )))))
 
 (defmethod om-view-click-handler ((self x-cursor-graduated-view) position)
   (handle-selection-extent self position))
@@ -454,13 +455,18 @@
 
 
 (defmethod om-view-mouse-motion-handler :around ((self x-cursor-graduated-view) position)
-  (let ((bx (time-to-pixel self (car (cursor-interval self))))
-        (ex (time-to-pixel self (cadr (cursor-interval self)))))
-    (cond ((or (om-point-in-line-p position (omp bx 0) (omp bx (h self)) 4)
-               (om-point-in-line-p position (omp ex 0) (omp ex (h self)) 4))
-           (om-set-view-cursor self (om-get-cursor :h-size)))
-          (t (om-set-view-cursor self (om-view-cursor self))
-             (call-next-method)))))
+
+  (if (and (cursor-interval self)
+           (let ((bx (time-to-pixel self (car (cursor-interval self))))
+                 (ex (time-to-pixel self (cadr (cursor-interval self)))))
+             (or (om-point-in-line-p position (omp bx 0) (omp bx (h self)) 4)
+                 (om-point-in-line-p position (omp ex 0) (omp ex (h self)) 4))))
+
+      (om-set-view-cursor self (om-get-cursor :h-size))
+
+    (progn
+      (om-set-view-cursor self (om-view-cursor self))
+      (call-next-method))))
 
 
 ;;;=================================
