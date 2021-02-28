@@ -467,77 +467,89 @@
 ;;; STANDARDIZED PLAY CONTROLS
 ;;;=================================
 
+;;; inserts teh button in a view, so it can be in a simple layout
+(defun make-button-view (button)
+  (om-make-view 'om-view
+                :size (om-view-size button)
+                :subviews (list button)))
+
+
 (defmethod make-play-button ((editor play-editor-mixin) &key size enable)
-  (setf (play-button editor)
-        (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
-                                :icon :icon-play-black
-                                :icon-pushed :icon-play-green
-                                :icon-disabled :icon-play-gray
-                                :lock-push t :enabled enable
-                                :pushed (equal (player-get-object-state (player editor) (get-obj-to-play editor)) :play)
-                                :action #'(lambda (b)
-                                            (declare (ignore b))
-                                            (editor-play editor)))))
+  (make-button-view
+   (setf (play-button editor)
+         (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
+                                 :icon :icon-play-black
+                                 :icon-pushed :icon-play-green
+                                 :icon-disabled :icon-play-gray
+                                 :lock-push t :enabled enable
+                                 :pushed (equal (player-get-object-state (player editor) (get-obj-to-play editor)) :play)
+                                 :action #'(lambda (b)
+                                             (declare (ignore b))
+                                             (editor-play editor))))))
 
 
 (defmethod make-pause-button ((editor play-editor-mixin) &key size enable)
-  (setf (pause-button editor)
-        (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
-                                :icon :icon-pause-black :icon-pushed :icon-pause-orange :icon-disabled :icon-pause-gray
-                                :lock-push t :enabled enable
-                                :pushed (equal (player-get-object-state (player editor) (get-obj-to-play editor)) :pause)
-                                :action #'(lambda (b)
-                                            (declare (ignore b))
-                                            (editor-pause editor)))))
+  (make-button-view
+   (setf (pause-button editor)
+         (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
+                                 :icon :icon-pause-black :icon-pushed :icon-pause-orange :icon-disabled :icon-pause-gray
+                                 :lock-push t :enabled enable
+                                 :pushed (equal (player-get-object-state (player editor) (get-obj-to-play editor)) :pause)
+                                 :action #'(lambda (b)
+                                             (declare (ignore b))
+                                             (editor-pause editor))))))
 
 (defmethod make-stop-button ((editor play-editor-mixin) &key size enable)
-  (setf (stop-button editor)
-        (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
-                                :icon :icon-stop-black :icon-pushed :icon-stop-white :icon-disabled :icon-stop-gray
-                                :lock-push nil :enabled enable
-                                :action #'(lambda (b)
-                                            (declare (ignore b))
-                                            (when (pause-button editor) (button-unselect (pause-button editor)))
-                                            (when (play-button editor) (button-unselect (play-button editor)))
-                                            (editor-stop editor)))))
+  (make-button-view
+   (setf (stop-button editor)
+         (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
+                                 :icon :icon-stop-black :icon-pushed :icon-stop-white :icon-disabled :icon-stop-gray
+                                 :lock-push nil :enabled enable
+                                 :action #'(lambda (b)
+                                             (declare (ignore b))
+                                             (when (pause-button editor) (button-unselect (pause-button editor)))
+                                             (when (play-button editor) (button-unselect (play-button editor)))
+                                             (editor-stop editor))))))
 
 (defmethod make-previous-button ((editor play-editor-mixin) &key size enable)
-  (setf (prev-button editor)
-        (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
-                                :icon :icon-previous-black :icon-pushed :icon-previous-white :icon-disabled :icon-previous-gray
-                                :lock-push nil :enabled enable
-                                :action #'(lambda (b)
-                                            (declare (ignore b))
-                                            (editor-previous-step editor)))))
+  (make-button-view
+   (setf (prev-button editor)
+         (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
+                                 :icon :icon-previous-black :icon-pushed :icon-previous-white :icon-disabled :icon-previous-gray
+                                 :lock-push nil :enabled enable
+                                 :action #'(lambda (b)
+                                             (declare (ignore b))
+                                             (editor-previous-step editor))))))
 
 (defmethod make-next-button ((editor play-editor-mixin) &key size enable)
-  (setf (next-button editor)
-        (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
-                                :icon :icon-next-black :icon-pushed :icon-next-white :icon-disabled :icon-next-gray
-                                :lock-push nil :enabled enable
-                                :action #'(lambda (b)
-                                            (declare (ignore b))
-                                            (editor-next-step editor)))))
+  (make-button-view
+   (setf (next-button editor)
+         (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
+                                 :icon :icon-next-black :icon-pushed :icon-next-white :icon-disabled :icon-next-gray
+                                 :lock-push nil :enabled enable
+                                 :action #'(lambda (b)
+                                             (declare (ignore b))
+                                             (editor-next-step editor))))))
 
 (defmethod make-rec-button ((editor play-editor-mixin) &key size enable)
-  (setf (rec-button editor)
-        (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
-                                :icon :icon-record-black :icon-pushed :icon-record-red :icon-disabled :icon-record-gray
-                                :lock-push t :enabled enable
-                                :action #'(lambda (b)
-                                            (declare (ignore b))
-                                            (editor-record editor)))))
-
+  (make-button-view
+   (setf (rec-button editor)
+         (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
+                                 :icon :icon-record-black :icon-pushed :icon-record-red :icon-disabled :icon-record-gray
+                                 :lock-push t :enabled enable
+                                 :action #'(lambda (b)
+                                             (declare (ignore b))
+                                             (editor-record editor))))))
 
 (defmethod make-repeat-button ((editor play-editor-mixin) &key size enable)
-  (setf (repeat-button editor)
-        (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
-                                :icon :icon-repeat-black :icon-pushed :icon-repeat-orange :icon-disabled :icon-repeat-gray
-                                :lock-push t :enabled enable
-                                :pushed (is-looping (get-obj-to-play editor))
-                                :action #'(lambda (b)
-                                            (editor-repeat editor (pushed b))))))
-
+  (make-button-view
+   (setf (repeat-button editor)
+         (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
+                                 :icon :icon-repeat-black :icon-pushed :icon-repeat-orange :icon-disabled :icon-repeat-gray
+                                 :lock-push t :enabled enable
+                                 :pushed (is-looping (get-obj-to-play editor))
+                                 :action #'(lambda (b)
+                                             (editor-repeat editor (print (pushed b))))))))
 
 
 (defun time-display (time_ms &optional format)

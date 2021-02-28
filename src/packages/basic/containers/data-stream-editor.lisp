@@ -91,22 +91,18 @@
 
     (set-g-component editor :mousepos-txt mousepostext)
 
-    (flet ((make-button-view (button)
-             (om-make-view 'om-view
-                           :size (om-view-size button)
-                           :subviews (list button))))
-      (om-make-layout
-       'om-row-layout
-       :ratios '(1 100 1 1 1 1 1)
-       :subviews (list mousepostext
-                       nil
-                       (make-time-monitor editor)
-                       (make-button-view (make-play-button editor :enable t))
-                       (make-button-view (make-repeat-button editor :enable t))
-                       (make-button-view (make-pause-button editor :enable t))
-                       (make-button-view (make-stop-button editor :enable t))
-                       ))
-      )))
+    (om-make-layout
+     'om-row-layout
+     :ratios '(1 100 1 1 1 1 1)
+     :subviews (list mousepostext
+                     nil
+                     (make-time-monitor editor)
+                     (make-play-button editor :enable t)
+                     (make-repeat-button editor :enable t)
+                     (make-pause-button editor :enable t)
+                     (make-stop-button editor :enable t)
+                     ))
+    ))
 
 
 (defmethod init-editor ((editor data-stream-editor))
