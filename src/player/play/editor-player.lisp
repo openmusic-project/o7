@@ -167,7 +167,7 @@
     (setf (play-interval self) inter)
     (set-object-interval (get-obj-to-play self) inter)
     (when (is-looping (get-obj-to-play self))
-      (reschedule (get-obj-to-play self) (player self)))
+      (notify-scheduler (get-obj-to-play self)))
     (update-cursor-pane-intervals self)
     ))
 
