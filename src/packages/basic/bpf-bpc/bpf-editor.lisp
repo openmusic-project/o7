@@ -181,6 +181,7 @@
                                                         (om-make-layout
                                                          'om-row-layout ;:size (omp 60 20)
                                                          :subviews (list (make-play-button editor :enable (action object))
+                                                                         (make-repeat-button editor :enable (action object))
                                                                          (make-pause-button editor :enable (action object))
                                                                          (make-stop-button editor :enable (action object)))))
                                                    )))
