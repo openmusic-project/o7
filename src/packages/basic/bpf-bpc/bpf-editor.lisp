@@ -181,6 +181,7 @@
                                                         (om-make-layout
                                                          'om-row-layout ;:size (omp 60 20)
                                                          :subviews (list (make-play-button editor :enable (action object))
+                                                                         (make-repeat-button editor :enable (action object))
                                                                          (make-pause-button editor :enable (action object))
                                                                          (make-stop-button editor :enable (action object)))))
                                                    )))
@@ -337,6 +338,11 @@
         (enable-play-controls editor (action object)))
       (om-invalidate-view (get-g-component editor :main-panel))
       )
+
+    ;;; will reset the repeat-state of the new object according to the current
+    ;;; repeat button state -- loop isn't stored as a proper editor property :-/
+    (editor-repeat editor (pushed (repeat-button editor)))
+
     (when (timeline-editor editor)
       (update-to-editor (timeline-editor editor) editor))))
 
@@ -861,22 +867,29 @@
 
 
 (defmethod set-point-in-obj ((self bpf-editor) point values)
+
   (set-point-in-bpf (object-value self) point
                     (car values)
                     (cadr values))
+
   (setf (point-list (object-value self))
         (sort (point-list (object-value self)) '< :key 'om-point-x))
+
   (when (container-editor self)
     (update-to-editor (container-editor self) self))
+
   (editor-invalidate-views self))
 
 (defmethod set-point-in-obj ((self bpc-editor) point values)
+
   (set-point-in-bpc (object-value self) point
                     (car values)
                     (cadr values)
                     (cadddr values))
+
   (setf (point-list (object-value self))
         (sort (point-list (object-value self)) '< :key 'tpoint-internal-time))
+
   (time-sequence-update-internal-times (object-value self))
 
   (when (container-editor self)

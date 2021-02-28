@@ -91,22 +91,18 @@
 
     (set-g-component editor :mousepos-txt mousepostext)
 
-    (flet ((make-button-view (button)
-             (om-make-view 'om-view
-                           :size (om-view-size button)
-                           :subviews (list button))))
-      (om-make-layout
-       'om-row-layout
-       :ratios '(1 100 1 1 1 1 1)
-       :subviews (list mousepostext
-                       nil
-                       (make-time-monitor editor)
-                       (make-button-view (make-play-button editor :enable t))
-                       (make-button-view (make-repeat-button editor :enable t))
-                       (make-button-view (make-pause-button editor :enable t))
-                       (make-button-view (make-stop-button editor :enable t))
-                       ))
-      )))
+    (om-make-layout
+     'om-row-layout
+     :ratios '(1 100 1 1 1 1 1)
+     :subviews (list mousepostext
+                     nil
+                     (make-time-monitor editor)
+                     (make-play-button editor :enable t)
+                     (make-repeat-button editor :enable t)
+                     (make-pause-button editor :enable t)
+                     (make-stop-button editor :enable t)
+                     ))
+    ))
 
 
 (defmethod init-editor ((editor data-stream-editor))
@@ -287,6 +283,11 @@
 
 (defmethod update-to-editor ((editor data-stream-editor) (from t))
   (call-next-method)
+
+  ;;; will reset the repeat-state of the new object according to the current
+  ;;; repeat button state -- loop isn't stored as a proper editor property :-/
+  (editor-repeat editor (pushed (repeat-button editor)))
+
   (mapc 'om-invalidate-view (get-g-component editor :data-panel-list)))
 
 
@@ -297,7 +298,7 @@
     (editor-invalidate-views (timeline-editor self))))
 
 
-;;; todo : factorize a bit this procedure in different editors..
+;;; todo : factorize this in different editors..
 (defmethod editor-delete-contents-from-timeline ((self data-stream-editor) timeline-id sel)
   (let ((data-stream (object-value self)))
     (mapcar #'(lambda (point) (remove-timed-point-from-time-sequence data-stream point)) sel)

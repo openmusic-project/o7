@@ -167,7 +167,7 @@
     (setf (play-interval self) inter)
     (set-object-interval (get-obj-to-play self) inter)
     (when (is-looping (get-obj-to-play self))
-      (reschedule (get-obj-to-play self) (player self)))
+      (notify-scheduler (get-obj-to-play self)))
     (update-cursor-pane-intervals self)
     ))
 
@@ -366,7 +366,7 @@
   (om-stop-transient-drawing self)
   (om-start-transient-drawing
    self #'draw-cursor-line
-   (omp (time-to-pixel self (car (cursor-interval self))) 0)
+   (omp (time-to-pixel self (or (car (cursor-interval self)) 0)) 0)
    (omp 2 (h self))))
 
 (defmethod stop-cursor ((self x-cursor-graduated-view))
@@ -420,20 +420,21 @@
 
 ;;; return T if detected/did something
 (defmethod handle-selection-extent ((self x-cursor-graduated-view) position)
-  (let ((tpl-editor (editor (om-view-window self)))
-        (bx (time-to-pixel self (car (cursor-interval self))))
-        (ex (time-to-pixel self (cadr (cursor-interval self)))))
-    (cond ((om-point-in-line-p position (omp ex 0) (omp ex (h self)) 4)
-           (change-interval-end tpl-editor self position)
-           t)
-          ((om-point-in-line-p position (omp bx 0) (omp bx (h self)) 4)
-           (change-interval-begin tpl-editor self position)
-           t)
-          (t
-           ;(set-cursor-time tpl-editor (pixel-to-time self (om-point-x position)))
-           ;(start-interval-selection tpl-editor self position)
-           nil
-           ))))
+  (when (cursor-interval self)
+    (let ((tpl-editor (editor (om-view-window self)))
+          (bx (time-to-pixel self (car (cursor-interval self))))
+          (ex (time-to-pixel self (cadr (cursor-interval self)))))
+      (cond ((om-point-in-line-p position (omp ex 0) (omp ex (h self)) 4)
+             (change-interval-end tpl-editor self position)
+             t)
+            ((om-point-in-line-p position (omp bx 0) (omp bx (h self)) 4)
+             (change-interval-begin tpl-editor self position)
+             t)
+            (t
+             ;(set-cursor-time tpl-editor (pixel-to-time self (om-point-x position)))
+             ;(start-interval-selection tpl-editor self position)
+             nil
+             )))))
 
 (defmethod om-view-click-handler ((self x-cursor-graduated-view) position)
   (handle-selection-extent self position))
@@ -454,90 +455,107 @@
 
 
 (defmethod om-view-mouse-motion-handler :around ((self x-cursor-graduated-view) position)
-  (let ((bx (time-to-pixel self (car (cursor-interval self))))
-        (ex (time-to-pixel self (cadr (cursor-interval self)))))
-    (cond ((or (om-point-in-line-p position (omp bx 0) (omp bx (h self)) 4)
-               (om-point-in-line-p position (omp ex 0) (omp ex (h self)) 4))
-           (om-set-view-cursor self (om-get-cursor :h-size)))
-          (t (om-set-view-cursor self (om-view-cursor self))
-             (call-next-method)))))
+
+  (if (and (cursor-interval self)
+           (let ((bx (time-to-pixel self (car (cursor-interval self))))
+                 (ex (time-to-pixel self (cadr (cursor-interval self)))))
+             (or (om-point-in-line-p position (omp bx 0) (omp bx (h self)) 4)
+                 (om-point-in-line-p position (omp ex 0) (omp ex (h self)) 4))))
+
+      (om-set-view-cursor self (om-get-cursor :h-size))
+
+    (progn
+      (om-set-view-cursor self (om-view-cursor self))
+      (call-next-method))))
 
 
 ;;;=================================
 ;;; STANDARDIZED PLAY CONTROLS
 ;;;=================================
 
+;;; inserts teh button in a view, so it can be in a simple layout
+(defun make-button-view (button)
+  (om-make-view 'om-view
+                :size (om-view-size button)
+                :subviews (list button)))
+
+
 (defmethod make-play-button ((editor play-editor-mixin) &key size enable)
-  (setf (play-button editor)
-        (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
-                                :icon :icon-play-black
-                                :icon-pushed :icon-play-green
-                                :icon-disabled :icon-play-gray
-                                :lock-push t :enabled enable
-                                :pushed (equal (player-get-object-state (player editor) (get-obj-to-play editor)) :play)
-                                :action #'(lambda (b)
-                                            (declare (ignore b))
-                                            (editor-play editor)))))
+  (make-button-view
+   (setf (play-button editor)
+         (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
+                                 :icon :icon-play-black
+                                 :icon-pushed :icon-play-green
+                                 :icon-disabled :icon-play-gray
+                                 :lock-push t :enabled enable
+                                 :pushed (equal (player-get-object-state (player editor) (get-obj-to-play editor)) :play)
+                                 :action #'(lambda (b)
+                                             (declare (ignore b))
+                                             (editor-play editor))))))
 
 
 (defmethod make-pause-button ((editor play-editor-mixin) &key size enable)
-  (setf (pause-button editor)
-        (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
-                                :icon :icon-pause-black :icon-pushed :icon-pause-orange :icon-disabled :icon-pause-gray
-                                :lock-push t :enabled enable
-                                :pushed (equal (player-get-object-state (player editor) (get-obj-to-play editor)) :pause)
-                                :action #'(lambda (b)
-                                            (declare (ignore b))
-                                            (editor-pause editor)))))
+  (make-button-view
+   (setf (pause-button editor)
+         (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
+                                 :icon :icon-pause-black :icon-pushed :icon-pause-orange :icon-disabled :icon-pause-gray
+                                 :lock-push t :enabled enable
+                                 :pushed (equal (player-get-object-state (player editor) (get-obj-to-play editor)) :pause)
+                                 :action #'(lambda (b)
+                                             (declare (ignore b))
+                                             (editor-pause editor))))))
 
 (defmethod make-stop-button ((editor play-editor-mixin) &key size enable)
-  (setf (stop-button editor)
-        (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
-                                :icon :icon-stop-black :icon-pushed :icon-stop-white :icon-disabled :icon-stop-gray
-                                :lock-push nil :enabled enable
-                                :action #'(lambda (b)
-                                            (declare (ignore b))
-                                            (when (pause-button editor) (button-unselect (pause-button editor)))
-                                            (when (play-button editor) (button-unselect (play-button editor)))
-                                            (editor-stop editor)))))
+  (make-button-view
+   (setf (stop-button editor)
+         (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
+                                 :icon :icon-stop-black :icon-pushed :icon-stop-white :icon-disabled :icon-stop-gray
+                                 :lock-push nil :enabled enable
+                                 :action #'(lambda (b)
+                                             (declare (ignore b))
+                                             (when (pause-button editor) (button-unselect (pause-button editor)))
+                                             (when (play-button editor) (button-unselect (play-button editor)))
+                                             (editor-stop editor))))))
 
 (defmethod make-previous-button ((editor play-editor-mixin) &key size enable)
-  (setf (prev-button editor)
-        (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
-                                :icon :icon-previous-black :icon-pushed :icon-previous-white :icon-disabled :icon-previous-gray
-                                :lock-push nil :enabled enable
-                                :action #'(lambda (b)
-                                            (declare (ignore b))
-                                            (editor-previous-step editor)))))
+  (make-button-view
+   (setf (prev-button editor)
+         (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
+                                 :icon :icon-previous-black :icon-pushed :icon-previous-white :icon-disabled :icon-previous-gray
+                                 :lock-push nil :enabled enable
+                                 :action #'(lambda (b)
+                                             (declare (ignore b))
+                                             (editor-previous-step editor))))))
 
 (defmethod make-next-button ((editor play-editor-mixin) &key size enable)
-  (setf (next-button editor)
-        (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
-                                :icon :icon-next-black :icon-pushed :icon-next-white :icon-disabled :icon-next-gray
-                                :lock-push nil :enabled enable
-                                :action #'(lambda (b)
-                                            (declare (ignore b))
-                                            (editor-next-step editor)))))
+  (make-button-view
+   (setf (next-button editor)
+         (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
+                                 :icon :icon-next-black :icon-pushed :icon-next-white :icon-disabled :icon-next-gray
+                                 :lock-push nil :enabled enable
+                                 :action #'(lambda (b)
+                                             (declare (ignore b))
+                                             (editor-next-step editor))))))
 
 (defmethod make-rec-button ((editor play-editor-mixin) &key size enable)
-  (setf (rec-button editor)
-        (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
-                                :icon :icon-record-black :icon-pushed :icon-record-red :icon-disabled :icon-record-gray
-                                :lock-push t :enabled enable
-                                :action #'(lambda (b)
-                                            (declare (ignore b))
-                                            (editor-record editor)))))
-
+  (make-button-view
+   (setf (rec-button editor)
+         (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
+                                 :icon :icon-record-black :icon-pushed :icon-record-red :icon-disabled :icon-record-gray
+                                 :lock-push t :enabled enable
+                                 :action #'(lambda (b)
+                                             (declare (ignore b))
+                                             (editor-record editor))))))
 
 (defmethod make-repeat-button ((editor play-editor-mixin) &key size enable)
-  (setf (repeat-button editor)
-        (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
-                                :icon :icon-repeat-black :icon-pushed :icon-repeat-orange :icon-disabled :icon-repeat-gray
-                                :lock-push t :enabled enable
-                                :pushed (is-looping (get-obj-to-play editor))
-                                :action #'(lambda (b)
-                                            (editor-repeat editor (pushed b))))))
-
+  (make-button-view
+   (setf (repeat-button editor)
+         (om-make-graphic-object 'om-icon-button :size (or size (omp 16 16))
+                                 :icon :icon-repeat-black :icon-pushed :icon-repeat-orange :icon-disabled :icon-repeat-gray
+                                 :lock-push t :enabled enable
+                                 :pushed (is-looping (get-obj-to-play editor))
+                                 :action #'(lambda (b)
+                                             (editor-repeat editor (print (pushed b))))))))
 
 
 (defun time-display (time_ms &optional format)

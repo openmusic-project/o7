@@ -156,6 +156,7 @@
 (defmethod remove-timed-point-from-time-sequence ((self time-sequence) item)
   (time-sequence-remove-timed-item self item)
   (time-sequence-update-internal-times self))
+
 (defmethod remove-nth-timed-point-from-time-sequence ((self time-sequence) pos)
   (time-sequence-set-timed-item-list self (remove-nth pos (time-sequence-get-timed-item-list self)))
   (time-sequence-update-internal-times self))
@@ -198,17 +199,13 @@
 
 ;;; !!! assume the timed-items are time-sorted
 (defmethod time-sequence-update-obj-dur ((self time-sequence))
-
   (setf (duration self)
-
         (if (remove nil (time-sequence-get-timed-item-list self))
-
             (let ((last-frame (last-elem (time-sequence-get-timed-item-list self))))
-
               (+ (item-real-time last-frame) (item-get-duration last-frame)))
-
           (time-sequence-default-duration self))
         ))
+
 
 (defmethod set-internal-times ((self time-sequence) internal-times)
   (loop for point in (time-sequence-get-timed-item-list self)
@@ -441,7 +438,6 @@
       (time-sequence-update-internal-times self))))
 
 
-
 (defmethod get-all-master-points-positions ((self time-sequence))
   (om-all-positions :master (time-types self)))
 
@@ -492,10 +488,10 @@
     ))
 
 
-
 (defmethod temporal-translate-all ((self time-sequence) dt)
   (loop for point in (time-sequence-get-timed-item-list self) do
         (item-set-time point (+ (item-get-time point) dt))))
+
 
 (defmethod temporal-translate-points ((self time-sequence) points dt)
   ;if only one point and master then translate as master point
@@ -506,6 +502,7 @@
       (loop for point in points do
             (item-set-time point (max 0 (+ (item-get-internal-time point) dt))))))
   (time-sequence-update-internal-times self))
+
 
 (defmethod possible-time-translation ((self time-sequence) points dt)
   (when points
@@ -521,6 +518,7 @@
                    (< (+ (item-get-internal-time (car (last points))) dt) (item-get-internal-time point-after)))
                )
           )))))
+
 
 (defmethod possible-time-translation-from-indices ((self time-sequence) indices dt)
   (let ((all-times (time-sequence-get-internal-times self)))
@@ -538,6 +536,7 @@
                     (> (+ (nth min-ind all-times) dt) prev-t)))))
     ))
 
+
 (defmethod temporal-translate-points-from-indices ((self time-sequence) indices dt)
   ;if only one point and master then translate as master point
   (if (and (eql (length indices) 1) (eql (nth (car indices) (time-types self)) :master))
@@ -548,8 +547,6 @@
             (item-set-time (nth point_index (time-sequence-get-timed-item-list self))
                            (max 0  (+ (nth point_index (time-sequence-get-internal-times self)) dt))))))
   (time-sequence-update-internal-times self))
-
-
 
 
 ;;; return T if the right-move is ok
@@ -662,8 +659,6 @@
       )))
 
 
-
-
 ;;;=========================================
 ;;; TIME MARKERS METHODS
 ;;;=========================================
@@ -729,5 +724,4 @@
                 (val (dx->x 0 length-profile)))
             (if (zerop length) (list 0)
               (om/ val length))))))))
-
 

@@ -351,6 +351,7 @@
                                                       (om-make-layout
                                                        'om-row-layout ;:size (omp 60 20)
                                                        :subviews (list (make-play-button editor :enable t)
+                                                                       (make-repeat-button editor :enable t)
                                                                        (make-pause-button editor :enable t)
                                                                        (make-stop-button editor :enable t))))
                                            )))
@@ -437,6 +438,10 @@
     ; (enable-play-controls self (action (object-value self))) ;;; leave T
     (update-sub-editors self)
     (update-default-view self)
+
+    ;;; will reset the repeat-state of the new object according to the current
+    ;;; repeat button state -- loop isn't stored as a proper editor property :-/
+    (editor-repeat self (pushed (repeat-button self)))
     ))
 
 ; when the timeline is edited
@@ -448,8 +453,8 @@
     (update-3d-view self)
     (update-sub-editors self)
     )
-  (report-modifications self)
-  )
+  (report-modifications self))
+
 
 ; when internal editors are edited
 (defmethod update-to-editor ((self 3DC-editor) (from bpf-editor))
@@ -459,6 +464,7 @@
     (update-editor-3d-object self)
     (update-3d-view self))
   (report-modifications self))
+
 
 (defmethod format-3D-points  ((self 3DC))
   (mat-trans (list (x-points self) (y-points self) (z-points self) (times self))))
