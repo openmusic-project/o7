@@ -708,8 +708,11 @@
 
 ;;; RETURNS A LIST OF (TIME ACTION) TO PERFORM IN TIME-INTERVAL
 (defmethod get-action-list-for-play ((object BPF) time-interval &optional parent)
+
   (when (action object)
+
     (if (number-? (interpol object))
+
         (let* ((t1 (max 0 (car time-interval)))
                (t2 (min (get-obj-dur object) (cadr time-interval)))
                (time-list (arithm-ser (get-active-interpol-time object t1) t2 (number-number (interpol object)))))
@@ -720,7 +723,7 @@
                           (list
                            ti
                            #'(lambda ()
-                               (funcall (action-fun object) (list ti (* (gain object) v))))))))
+                               (funcall (action-fun object) (list ti (float (* (gain object) v)))))))))
       ;;; no interpolation
       (mapcar
        #'(lambda (xy)
