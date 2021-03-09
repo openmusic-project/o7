@@ -800,7 +800,7 @@
                                                    (when (find #\Newline (om-dialog-item-text item))
                                                      (om-set-dialog-item-text
                                                       item
-                                                      (substitute #\Space #\Newline (om-dialog-item-text item)))
+                                                      (remove #\Newline (om-dialog-item-text item)))
                                                      (om-dialog-item-action item)
                                                      ))
                                                  (when auto-resize
