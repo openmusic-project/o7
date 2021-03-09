@@ -222,22 +222,23 @@
                      #'(lambda (err)
                          (om-message-dialog (format nil "#'with-safe-open-file: an error of type ~a occurred: ~%\"~a\"" (type-of err) err))
                          (abort err))))
-       (when
-           (catch 'format-failed
-             (handler-bind ((sys::external-format-error
-                             #'(lambda (err) (declare (ignore err))
-                                 (throw 'format-failed ,default-format)
-                                 )))
+       (let ((rep
+              (catch 'format-failed
+                (handler-bind ((sys::external-format-error
+                                #'(lambda (err) (declare (ignore err))
+                                    (throw 'format-failed ,default-format)
+                                    )))
 
-               ;;; main body
-               (with-open-file ,(append args (list :external-format default-format))
-                 ,@body)
-               ))
+                  ;;; main body
+                  (with-open-file ,(append args (list :external-format default-format))
+                    ,@body)
+                  ))))
 
-         ;;; catch body
-         (print (format nil "External format error: could not load file as ~a. Now trying with ~a."
-                        ,default-format ,backup-format))
-         (with-open-file ,(append args (list :external-format backup-format))
-           ,@body)
+         (if (equal rep 'format-failed)
+             (progn (print (format nil "External format error: could not load file as ~a. Now trying with ~a."
+                                   ,default-format ,backup-format))
+               (with-open-file ,(append args (list :external-format backup-format))
+                 ,@body))
+           rep)
          ))
     ))
