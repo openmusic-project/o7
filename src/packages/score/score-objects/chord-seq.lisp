@@ -79,7 +79,8 @@ Internally most of these values are just used to build a list of CHORD objects, 
 
 "))
 
-(defmethod chords ((self chord-seq)) (time-sequence-get-timed-item-list self))
+(defmethod chords ((self chord-seq))
+  (data-stream-get-frames self))
 
 (defmethod set-chords ((self chord-seq) (chords list))
   (data-stream-set-frames self chords))
