@@ -541,6 +541,7 @@
           (cond
 
            ((and (null selection) (om-add-key-down))
+            (store-current-state-for-undo editor)
             (let ((frame (time-sequence-make-timed-item-at (object-value editor) (pixel-to-time self (om-point-x p0)))))
               (finalize-data-frame frame :posy (pix-to-y self (- (h self) (om-point-y p0))))
               (time-sequence-insert-timed-item-and-update (object-value editor) frame)
@@ -552,9 +553,12 @@
             (let* ((selected-frame (nth selection (data-stream-get-frames (object-value editor))))
                    (selected-frame-end-t (time-to-pixel self (item-end-time selected-frame))))
 
+              (store-current-state-for-undo editor)
+
               ;;; resize the selected frame ?
               (if (and (resizable-frame selected-frame)
                        (<= (om-point-x position) selected-frame-end-t) (>= (om-point-x position) (- selected-frame-end-t 5)))
+
                   (om-init-temp-graphics-motion
                    self position nil
                    :motion #'(lambda (view pos)
