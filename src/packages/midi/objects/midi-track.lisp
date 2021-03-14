@@ -95,15 +95,16 @@
 ;;;===================================================
 
 (defclass* midi-track (data-stream)
-  ((midi-events :accessor midi-events :initarg :midi-events :initform '() :documentation "a list of MIDI-NOTEs or MIDIEVENTs"))
+  ((midi-events :initarg :midi-events :initform '() :documentation "a list of MIDI-NOTEs or MIDIEVENTs"))
   (:default-initargs :default-frame-type 'midi-note))
 
-(defmethod data-stream-frames-slot ((self midi-track)) 'midi-events)
-
+(defmethod midi-events ((self midi-track))
+  (data-stream-get-frames self))
 
 (defmethod initialize-instance ((self midi-track) &rest initargs)
   (call-next-method)
   (data-stream-set-frames self (midievents-to-midinotes (slot-value self 'midi-events) :collect-other-events t))
+  (setf (slot-value self 'midi-events) nil)
   self)
 
 
