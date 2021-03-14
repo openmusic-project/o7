@@ -43,7 +43,10 @@
 
 
 (defun midinote-onset (midinote) (onset midinote))
-(defun midinote-pitch (midinote) (pitch midinote))
+
+;;; round pitch: during drag operations, pitch can have float values
+;;; (it is rounded only when drag terminates)
+(defun midinote-pitch (midinote) (round (pitch midinote)))
 (defun midinote-vel (midinote) (vel midinote))
 (defun midinote-dur (midinote) (dur midinote))
 (defun midinote-channel (midinote) (ev-chan midinote))
@@ -95,15 +98,16 @@
 ;;;===================================================
 
 (defclass* midi-track (data-stream)
-  ((midi-events :accessor midi-events :initarg :midi-events :initform '() :documentation "a list of MIDI-NOTEs or MIDIEVENTs"))
+  ((midi-events :initarg :midi-events :initform '() :documentation "a list of MIDI-NOTEs or MIDIEVENTs"))
   (:default-initargs :default-frame-type 'midi-note))
 
-(defmethod data-stream-frames-slot ((self midi-track)) 'midi-events)
-
+(defmethod midi-events ((self midi-track))
+  (data-stream-get-frames self))
 
 (defmethod initialize-instance ((self midi-track) &rest initargs)
   (call-next-method)
   (data-stream-set-frames self (midievents-to-midinotes (slot-value self 'midi-events) :collect-other-events t))
+  (setf (slot-value self 'midi-events) nil)
   self)
 
 
@@ -411,11 +415,13 @@
          (pr (object-value editor)))
     (case key
       (:om-key-up
+       (store-current-state-for-undo editor)
        (move-editor-selection editor :dy (if (om-shift-key-p) 12 1))
        (om-invalidate-view panel)
        (update-timeline-editor editor)
        (report-modifications editor))
       (:om-key-down
+       (store-current-state-for-undo editor)
        (move-editor-selection editor :dy (if (om-shift-key-p) -12 -1))
        (om-invalidate-view panel)
        (report-modifications editor))

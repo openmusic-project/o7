@@ -49,8 +49,7 @@
 ;;; redefines only visible :initargs
 (defclass* chord-seq (internal-chord-seq)
 
-  ((frames :accessor frames :initform nil :documentation "a list of timed data chunks")
-   (Lmidic :initform '((6000)) :initarg :LMidic :type list :documentation "pitches (mc): list or list of lists")
+  ((Lmidic :initform '((6000)) :initarg :LMidic :type list :documentation "pitches (mc): list or list of lists")
    (Lonset :initform '(0 1000) :initarg :LOnset :type list :documentation "onsets (ms): list")
    (Ldur :initform '((1000)) :initarg :Ldur :type list :documentation "durations (ms): list or list of lists")
    (Lvel :initform 100 :initarg :LVel :type list :documentation "velocities (0-127): list or list of lists"))
@@ -80,7 +79,8 @@ Internally most of these values are just used to build a list of CHORD objects, 
 
 "))
 
-(defmethod chords ((self chord-seq)) (time-sequence-get-timed-item-list self))
+(defmethod chords ((self chord-seq))
+  (data-stream-get-frames self))
 
 (defmethod set-chords ((self chord-seq) (chords list))
   (data-stream-set-frames self chords))
