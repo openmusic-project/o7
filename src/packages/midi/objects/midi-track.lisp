@@ -412,11 +412,13 @@
          (pr (object-value editor)))
     (case key
       (:om-key-up
+       (store-current-state-for-undo editor)
        (move-editor-selection editor :dy (if (om-shift-key-p) 12 1))
        (om-invalidate-view panel)
        (update-timeline-editor editor)
        (report-modifications editor))
       (:om-key-down
+       (store-current-state-for-undo editor)
        (move-editor-selection editor :dy (if (om-shift-key-p) -12 -1))
        (om-invalidate-view panel)
        (report-modifications editor))
