@@ -115,7 +115,7 @@ By default the server listen to ANY addresses (localhost and IP address). Set <h
                                                   )
                                                 nil))))
           (when process
-            (om-print (format nil "OSC-RECEIVE START on port ~D" port))
+            (om-print (format nil "Start OSC receive server on ~A ~D" host port))
             process))
 
       (om-beep-msg (format nil "Error - bad port number for OSC-RECEIVE: ~A" port)))))
