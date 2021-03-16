@@ -57,8 +57,8 @@
 ;; (defmethod allow-lock-button ((self ReceiveBox)) nil)
 
 (defclass OMReceiveBox (OMGFBoxcall)
-  ((state :initform nil :initarg :state :accessor state)
-   (process :initform nil :initarg :process :accessor process)))
+  ((state :initform nil :accessor state)
+   (process :initform nil :accessor process)))
 
 ;;; ARGS = BOX ARGS
 (defmethod start-receive-process ((self t)) nil)
