@@ -65,16 +65,26 @@
 ;;,; ARGS = BOX PROCESS
 (defmethod stop-receive-process ((self t)) nil)
 
+
 (defmethod stop-box ((self OMReceiveBox))
+
   (when (stop-receive-process (reference self))
-    (funcall (stop-receive-process (reference self)) self (process self))))
+    (funcall (stop-receive-process (reference self)) self (process self)))
+
+  (setf (state self) nil))
+
 
 (defmethod start-box ((self OMReceiveBox))
+
   (when (state self) (stop-box self))
+
   (when (start-receive-process (reference self))
     (let ((args (mapcar 'omng-box-value (inputs self))))
       (setf (process self)
-            (funcall (start-receive-process (reference self)) self args)))))
+            (funcall (start-receive-process (reference self)) self args))))
+
+  (setf (state self) (if (process self) t nil)))
+
 
 (defmethod omNG-box-value ((self OMReceiveBox) &optional (numout 0))
   (current-box-value self numout))
@@ -84,8 +94,7 @@
 
 (defmethod set-reactive ((box OMReceiveBox) val)
   (call-next-method)
-  (if val (start-box box) (stop-box box))
-  (setf (state box) val))
+  (if val (start-box box) (stop-box box)))
 
 (defmethod set-delivered-value :after ((box OMReceiveBox) msg &rest more-values)
   (self-notify box nil))
