@@ -95,7 +95,6 @@
 ;;====================
 
 (defmethod* udp-send (msg host port)
-  :icon 611
   :initvals '(nil "127.0.0.1" 3000)
   :indoc '("message" "IP address" "port number")
   :doc "Sends the message (<msg>) port <port> of <host>.
@@ -105,7 +104,6 @@ Note: default host 127.0.0.1 is the 'localhost', i.e. the message is send to the
   (when (om-send-udp port host msg) t))
 
 (defmethod* udp-receive (port msg-processing &optional (host "localhost"))
-  :icon 611
   :indoc '("port number" "incoming message processing patch" "an IP address")
   :initvals '(3000 nil "localhost")
   :doc "A local UDP server.
