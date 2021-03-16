@@ -72,7 +72,10 @@
     (funcall (stop-receive-process (reference self)) self (process self)))
 
   (setf (process self) nil)
-  (setf (state self) nil))
+  (setf (state self) nil)
+
+  (when (frame self)
+    (om-invalidate-view (frame self))))
 
 
 (defmethod start-box ((self OMReceiveBox))
@@ -84,7 +87,10 @@
       (setf (process self)
             (funcall (start-receive-process (reference self)) self args))))
 
-  (setf (state self) (if (process self) t nil)))
+  (setf (state self) (if (process self) t nil))
+
+  (when (frame self)
+    (om-invalidate-view (frame self))))
 
 
 (defmethod omNG-box-value ((self OMReceiveBox) &optional (numout 0))
@@ -103,6 +109,15 @@
 (defmethod omng-delete ((box OMReceiveBox))
   (stop-box box)
   (call-next-method))
+
+
+(defmethod boxframe-draw-contents ((self OMBoxFrame) (box OMReceiveBox))
+  (call-next-method)
+  (when (state box)
+    (om-draw-rounded-rect 0 0 (w self) (h self)
+                          :color (om-make-color 0.6 0.5 0. 0.3)
+                          :fill t :round 4)
+    ))
 
 
 ;;====================
