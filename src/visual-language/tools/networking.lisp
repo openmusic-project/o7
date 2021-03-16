@@ -100,6 +100,11 @@
 (defmethod set-delivered-value :after ((box OMReceiveBox) msg &rest more-values)
   (self-notify box nil))
 
+(defmethod omng-delete ((box OMReceiveBox))
+  (stop-box box)
+  (call-next-method))
+
+
 ;;====================
 ;; UDP SEND / RECEIVE
 ;;====================
