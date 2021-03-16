@@ -131,25 +131,26 @@ By default the server is only local. Set <host> to your current IP address to al
 (defun udp-start-receive (box args)
   (let ((port (car args))
         (fun (cadr args))
-        (host (caddr args)))
+        (host (or (caddr args) "localhost")))
+
     (if (and port (numberp port))
         (progn
-          (om-print (format nil "RECEIVE START on port ~D" port) "UDP")
-          (om-start-udp-server port (or host "localhost")
+          (om-print (format nil "Start UDP receive server on ~A ~D" host port) "UDP")
+          (om-start-udp-server port host
                                #'(lambda (msg)
                                    ;(print (format nil "UDP RECEIVE= ~A" msg))
                                    (let ((delivered (process-message msg fun)))
                                      (set-delivered-value box delivered))
                                    nil
                                    )))
-
-      (om-beep-msg (format nil "Error - bad port number for UDP-RECEIVE: ~A" port)))))
+      (om-beep-msg (format nil "Error - bad port number for UDP-RECEIVE: ~A" port))
+      )))
 
 (defun udp-stop-receive (box process)
   (declare (ignore box))
   (when process
     (om-stop-udp-server process)
-    (om-print (format nil "RECEIVE STOP: ~A" (om-process-name process)) "UDP")))
+    (om-print (format nil "Stop ~A" (om-process-name process)) "UDP")))
 
 (defmethod start-receive-process ((self (eql 'udp-receive))) 'udp-start-receive)
 (defmethod stop-receive-process ((self (eql 'udp-receive))) 'udp-stop-receive)
