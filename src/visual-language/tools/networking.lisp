@@ -71,6 +71,7 @@
   (when (stop-receive-process (reference self))
     (funcall (stop-receive-process (reference self)) self (process self)))
 
+  (setf (process self) nil)
   (setf (state self) nil))
 
 
