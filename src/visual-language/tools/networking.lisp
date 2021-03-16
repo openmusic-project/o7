@@ -82,9 +82,6 @@
 (defmethod set-delivered-value ((box OMReceiveBox) msg &rest more-values)
   (setf (value box) (cons msg more-values)))
 
-; saved like this in some former versions:
-; (defmethod set-active ((box t) val) nil)
-
 (defmethod set-reactive ((box OMReceiveBox) val)
   (call-next-method)
   (if val (start-box box) (stop-box box))
