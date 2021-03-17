@@ -79,7 +79,8 @@ Note: default host 127.0.0.1 is the 'localhost', i.e. the message is send to the
   :initvals '(3000 nil nil)
   :doc "A local OSC server.
 
-Right-click and select the appropriate option to turn on/off.
+Use 'R' to set the box reactive and activate/deactivate the server.
+
 When the server is on, OSC-RECEIVE waits for OSC messages on port <port> and calls <msg-processing> with the decoded message as parameter.
 
 <msg-processing> must be a patch in mode 'lambda' with 1 input corresponding to an OSC message.
@@ -105,21 +106,16 @@ By default the server listen to ANY addresses (localhost and IP address). Set <h
         (fun (cadr args))
         (host (caddr args)))
     (if (and port (numberp port))
-        (let ((s (om-start-udp-server port host
-                                      #'(lambda (msg)
-                                          (let* ((message (osc-decode msg)))
-                                         ;(print (format nil "OSC RECEIVE [~A:~D]= ~A" host port message))
-                                            (let ((delivered (process-osc-bundle message fun)))
-                                              (set-delivered-value box (reverse delivered)))
-                                            )
-                                          nil))))
-          (when s (om-print (format nil "OSC-RECEIVE START on port ~D" port)) s)
-          )
+        (let ((process (om-start-udp-server port host
+                                            #'(lambda (msg)
+                                                (let* ((message (osc-decode msg)))
+                                                  ;(print (format nil "OSC RECEIVE [~A:~D]= ~A" host port message))
+                                                  (let ((delivered (process-osc-bundle message fun)))
+                                                    (set-delivered-value box (reverse delivered)))
+                                                  )
+                                                nil))))
+          (when process
+            (om-print (format nil "Start OSC receive server on ~A ~D" host port))
+            process))
+
       (om-beep-msg (format nil "Error - bad port number for OSC-RECEIVE: ~A" port)))))
-
-
-
-
-
-
-

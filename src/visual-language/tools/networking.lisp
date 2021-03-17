@@ -57,24 +57,41 @@
 ;; (defmethod allow-lock-button ((self ReceiveBox)) nil)
 
 (defclass OMReceiveBox (OMGFBoxcall)
-  ((state :initform nil :initarg :state :accessor state)
-   (process :initform nil :initarg :process :accessor process)))
+  ((state :initform nil :accessor state)
+   (process :initform nil :accessor process)))
 
 ;;; ARGS = BOX ARGS
 (defmethod start-receive-process ((self t)) nil)
 ;;,; ARGS = BOX PROCESS
 (defmethod stop-receive-process ((self t)) nil)
 
+
 (defmethod stop-box ((self OMReceiveBox))
+
   (when (stop-receive-process (reference self))
-    (funcall (stop-receive-process (reference self)) self (process self))))
+    (funcall (stop-receive-process (reference self)) self (process self)))
+
+  (setf (process self) nil)
+  (setf (state self) nil)
+
+  (when (frame self)
+    (om-invalidate-view (frame self))))
+
 
 (defmethod start-box ((self OMReceiveBox))
+
   (when (state self) (stop-box self))
+
   (when (start-receive-process (reference self))
     (let ((args (mapcar 'omng-box-value (inputs self))))
       (setf (process self)
-            (funcall (start-receive-process (reference self)) self args)))))
+            (funcall (start-receive-process (reference self)) self args))))
+
+  (setf (state self) (if (process self) t nil))
+
+  (when (frame self)
+    (om-invalidate-view (frame self))))
+
 
 (defmethod omNG-box-value ((self OMReceiveBox) &optional (numout 0))
   (current-box-value self numout))
@@ -82,23 +99,32 @@
 (defmethod set-delivered-value ((box OMReceiveBox) msg &rest more-values)
   (setf (value box) (cons msg more-values)))
 
-; saved like this in some former versions:
-; (defmethod set-active ((box t) val) nil)
-
 (defmethod set-reactive ((box OMReceiveBox) val)
   (call-next-method)
-  (if val (start-box box) (stop-box box))
-  (setf (state box) val))
+  (if val (start-box box) (stop-box box)))
 
 (defmethod set-delivered-value :after ((box OMReceiveBox) msg &rest more-values)
   (self-notify box nil))
+
+(defmethod omng-delete ((box OMReceiveBox))
+  (stop-box box)
+  (call-next-method))
+
+
+(defmethod boxframe-draw-contents ((self OMBoxFrame) (box OMReceiveBox))
+  (call-next-method)
+  (when (state box)
+    (om-draw-rounded-rect 0 0 (w self) (h self)
+                          :color (om-make-color 0.6 0.5 0. 0.3)
+                          :fill t :round 4)
+    ))
+
 
 ;;====================
 ;; UDP SEND / RECEIVE
 ;;====================
 
 (defmethod* udp-send (msg host port)
-  :icon 611
   :initvals '(nil "127.0.0.1" 3000)
   :indoc '("message" "IP address" "port number")
   :doc "Sends the message (<msg>) port <port> of <host>.
@@ -108,13 +134,13 @@ Note: default host 127.0.0.1 is the 'localhost', i.e. the message is send to the
   (when (om-send-udp port host msg) t))
 
 (defmethod* udp-receive (port msg-processing &optional (host "localhost"))
-  :icon 611
   :indoc '("port number" "incoming message processing patch" "an IP address")
   :initvals '(3000 nil "localhost")
   :doc "A local UDP server.
 
-Right-click and select the appropriate option to turn on/off.
-When the server is on, OSC-RECEIVE waits for messages on port <port> and calls <msg-processing> with the message as parameter.
+Use 'R' to set the box reactive and activate/deactivate the server.
+
+When the server is on, UDP-RECEIVE waits for messages on port <port> and calls <msg-processing> with the message as parameter.
 
 <msg-processing> must be a patch in mode 'lambda' with 1 input corresponding to a message.
 This patch should handle and process the incoming messages.
@@ -135,25 +161,26 @@ By default the server is only local. Set <host> to your current IP address to al
 (defun udp-start-receive (box args)
   (let ((port (car args))
         (fun (cadr args))
-        (host (caddr args)))
+        (host (or (caddr args) "localhost")))
+
     (if (and port (numberp port))
         (progn
-          (om-print (format nil "RECEIVE START on port ~D" port) "UDP")
-          (om-start-udp-server port (or host "localhost")
+          (om-print (format nil "Start UDP receive server on ~A ~D" host port) "UDP")
+          (om-start-udp-server port host
                                #'(lambda (msg)
                                    ;(print (format nil "UDP RECEIVE= ~A" msg))
                                    (let ((delivered (process-message msg fun)))
                                      (set-delivered-value box delivered))
                                    nil
                                    )))
-
-      (om-beep-msg (format nil "Error - bad port number for UDP-RECEIVE: ~A" port)))))
+      (om-beep-msg (format nil "Error - bad port number for UDP-RECEIVE: ~A" port))
+      )))
 
 (defun udp-stop-receive (box process)
   (declare (ignore box))
   (when process
     (om-stop-udp-server process)
-    (om-print (format nil "RECEIVE STOP: ~A" (om-process-name process)) "UDP")))
+    (om-print (format nil "Stop ~A" (om-process-name process)) "UDP")))
 
 (defmethod start-receive-process ((self (eql 'udp-receive))) 'udp-start-receive)
 (defmethod stop-receive-process ((self (eql 'udp-receive))) 'udp-stop-receive)
