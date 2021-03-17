@@ -29,6 +29,7 @@
 (compile&load (merge-pathnames "objects/midi-mix" *load-pathname*))
 (compile&load (merge-pathnames "tools/midi-extract" *load-pathname*))
 (compile&load (merge-pathnames "tools/midi-out" *load-pathname*))
+(compile&load (merge-pathnames "tools/midi-in" *load-pathname*))
 (compile&load (merge-pathnames "compatibility" *load-pathname*))
 
 
@@ -55,7 +56,8 @@
         "Out"
         :doc "Send MIDI events out"
         :functions '(pgmout pitchbend pitchwheel ctrlchg volume midi-reset send-midi-note))
+       (omNG-make-package
+        "In"
+        :doc "REceive MIDI events"
+        :functions '(midi-in))
        ))
-
-
-

@@ -79,23 +79,23 @@
 
 (defun pm-device-info-interf (ptr)
   (or (ignore-errors (cffi:foreign-string-to-lisp
-                      (cffi:foreign-slot-value ptr '(:struct pm-device-info) 'interf)))
+                      (cffi:foreign-slot-value ptr 'pm-device-info 'interf)))
       "Error reading interface name"))
 
 (defun pm-device-info-name (ptr)
   (or (ignore-errors
         (cffi:foreign-string-to-lisp
-         (cffi:foreign-slot-value ptr '(:struct pm-device-info) 'name)))
+         (cffi:foreign-slot-value ptr 'pm-device-info 'name)))
       "Error reading device name"))
 
 (defun pm-device-info-input (ptr)
-  (not (= (cffi:foreign-slot-value ptr '(:struct pm-device-info) 'input) 0)))
+  (not (= (cffi:foreign-slot-value ptr 'pm-device-info 'input) 0)))
 
 (defun pm-device-info-output (ptr)
-  (not (= (cffi:foreign-slot-value ptr '(:struct pm-device-info) 'output) 0)))
+  (not (= (cffi:foreign-slot-value ptr 'pm-device-info 'output) 0)))
 
 (defun pm-device-info-opened (ptr)
-  (not (= (cffi:foreign-slot-value ptr '(:struct pm-device-info) 'opened) 0)))
+  (not (= (cffi:foreign-slot-value ptr 'pm-device-info 'opened) 0)))
 
 
 ;;; MIDI EVENTS
@@ -125,16 +125,16 @@
 (defun Event.message (e &optional (v nil vp))
   (if vp
       (progn
-        (setf (cffi:foreign-slot-value e '(:struct pm-event) 'message) v)
+        (setf (cffi:foreign-slot-value e 'pm-event 'message) v)
         v)
-    (cffi:foreign-slot-value e '(:struct pm-event) 'message)))
+    (cffi:foreign-slot-value e 'pm-event 'message)))
 
 (defun Event.timestamp (e &optional (v nil vp))
   (if vp
       (progn
-        (setf (cffi:foreign-slot-value e '(:struct pm-event) 'timestamp) v)
+        (setf (cffi:foreign-slot-value e 'pm-event 'timestamp) v)
         v)
-    (cffi:foreign-slot-value e '(:struct pm-event) 'timestamp)))
+    (cffi:foreign-slot-value e 'pm-event 'timestamp)))
 
 
 
@@ -142,21 +142,21 @@
 ;;; EVENT BUFFERS
 
 (defun pm-EventBufferNew (len)
-  (cffi:foreign-alloc '(:struct pm-event) :count len))
+  (cffi:foreign-alloc 'pm-event :count len))
 
 (defun pm-EventBufferFree (buf)
   (cffi:foreign-free buf))
 
 (defun pm-EventBufferElt (buf i)
   ;; buf is POINTER to buf
-  (cffi:mem-aref buf '(:struct pm-event) i))
+  (cffi:mem-aref buf 'pm-event i))
 
 (defun pm-EventBufferSet (buffer index timestamp message)
   (setf (cffi:foreign-slot-value
-         (cffi:mem-aref buffer '(:struct pm-event) index) '(:struct pm-event) 'timestamp)
+         (cffi:mem-aref buffer 'pm-event index) 'pm-event 'timestamp)
         timestamp)
   (setf (cffi:foreign-slot-value
-         (cffi:mem-aref buffer '(:struct pm-event) index) '(:struct pm-event) 'message)
+         (cffi:mem-aref buffer 'pm-event index) 'pm-event 'message)
         message)
   (values))
 
